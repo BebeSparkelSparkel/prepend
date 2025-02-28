@@ -1,0 +1,32 @@
+#!/bin/sh
+set -e
+
+help='prepend <string-to-prepend> <file-path> [<file-path> ...]'
+
+string="$1"
+if [ -z "$string" ]; then
+  echo "$help" >&2
+  exit 1
+fi
+
+shift
+files="$@"
+if [ -z "$files" ]; then
+  echo 'ERROR: No files specified' >&2
+  echo "$help" >&2
+  exit 1
+fi
+
+for file in $files; do
+  if [ ! -f "$file" ]; then
+    echo "ERROR: File $file does not exist" >&2
+    exit 1
+  fi
+done
+
+for file in $files; do
+  tmp="$(mktemp prepend.XXXXXX)"
+  echo -n "$string" > "$tmp"
+  cat "$file" >> "$tmp"
+  mv "$tmp" "$file"
+done
